@@ -8,33 +8,43 @@ async function generateRCA(question) {
   const commits = require('../../datasets/commits.json');
   const deployments = require('../../datasets/deployments.json');
 
-  // Extract specific attribution data
-  const relevantCommit = commits.find(c => c.commitId === 'e4f5g6h'); // The auth-service regex commit
-  const relevantDeployment = deployments.find(d => d.version === 'v2.4.1');
+  // Dynamically extract all relevant attribution data for the root service
+  const rootService = incidentData.rootService;
+  const relevantCommits = commits.filter(c => c.service === rootService);
+  const relevantDeployments = deployments.filter(d => d.service === rootService);
 
-  const evidenceText = `
+  let evidenceText = `
 [Evidence ID: incident_0]
 Type: incident
 Content: ${incidentData.summary}
 Details: ${JSON.stringify(incidentData)}
+`;
 
-[Evidence ID: commit_e4f5g6h]
-Type: commit
-Content: ${relevantCommit.service} commit by ${relevantCommit.author}: ${relevantCommit.message}
-Details: ${JSON.stringify(relevantCommit)}
-
-[Evidence ID: dep_8842]
-Type: deployment
-Content: Deployment of ${relevantDeployment.service} ${relevantDeployment.version}
-Details: ${JSON.stringify(relevantDeployment)}
-  `.trim();
-
-  // For compatibility with the fallback engine if OpenRouter fails
   const evidenceList = [
-    { type: 'incident', id: 'incident_0', content: incidentData.summary, details: incidentData },
-    { type: 'commit', id: 'commit_e4f5g6h', content: `${relevantCommit.service} commit by ${relevantCommit.author}: ${relevantCommit.message}`, details: relevantCommit },
-    { type: 'deployment', id: 'dep_8842', content: `Deployment of ${relevantDeployment.service} ${relevantDeployment.version}`, details: relevantDeployment }
+    { type: 'incident', id: 'incident_0', content: incidentData.summary, details: incidentData }
   ];
+
+  relevantCommits.forEach(c => {
+    evidenceText += `
+[Evidence ID: commit_${c.commitId}]
+Type: commit
+Content: ${c.service} commit by ${c.author}: ${c.message}
+Details: ${JSON.stringify(c)}
+`;
+    evidenceList.push({ type: 'commit', id: `commit_${c.commitId}`, content: `${c.service} commit by ${c.author}: ${c.message}`, details: c });
+  });
+
+  relevantDeployments.forEach(d => {
+    evidenceText += `
+[Evidence ID: dep_${d.deploymentId}]
+Type: deployment
+Content: Deployment of ${d.service} ${d.version}
+Details: ${JSON.stringify(d)}
+`;
+    evidenceList.push({ type: 'deployment', id: `dep_${d.deploymentId}`, content: `Deployment of ${d.service} ${d.version}`, details: d });
+  });
+
+  evidenceText = evidenceText.trim();
 
   const systemPrompt = `You are a Principal Incident Commander and Root Cause Analysis engine.
 Your task is to analyze the provided operational evidence and answer the user's question with a structured Root Cause Analysis.
