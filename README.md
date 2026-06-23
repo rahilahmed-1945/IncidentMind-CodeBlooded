@@ -583,9 +583,6 @@ Rollback Deployment
 
 https://incident-mind-code-blooded.vercel.app/
 
-## Backend API
-
-https://incidentmind-api.onrender.com
 
 ## Explanation Video
 
