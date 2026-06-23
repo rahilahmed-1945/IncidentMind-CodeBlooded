@@ -14,6 +14,7 @@ import ParallelSimulator from "./components/ParallelSimulator";
 import AskIncidentMind from "./components/AskIncidentMind";
 import ExecutiveNarrative from "./components/ExecutiveNarrative";
 import LiveFeed from "./components/LiveFeed";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export default function App() {
 
@@ -68,7 +69,7 @@ export default function App() {
   // Fetch History when Replay starts
   useEffect(() => {
     if (isReplaying) {
-      axios.get(import.meta.env.VITE_API_URL + "/history").then(res => {
+      axios.get(API_URL + "/history").then(res => {
         setHistoricalSnapshots(res.data);
       }).catch(err => console.error("Failed to fetch history", err));
     }
@@ -81,7 +82,7 @@ export default function App() {
     let isMounted = true;
     
     // Connect to local backend
-    const socket = io(import.meta.env.VITE_API_URL);
+    const socket = io(API_URL);
     socketRef.current = socket;
 
     socket.on("connect", () => {

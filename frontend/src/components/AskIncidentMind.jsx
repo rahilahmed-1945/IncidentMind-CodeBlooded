@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal, X, Loader2, Database, BrainCircuit, Activity } from 'lucide-react';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 const TypewriterText = ({ text }) => {
   const [displayedText, setDisplayedText] = useState('');
 
@@ -48,7 +50,7 @@ export default function AskIncidentMind({ isOpen, onClose }) {
       // Delay actual response to allow animation to complete
       setTimeout(async () => {
         try {
-          const response = await axios.post(import.meta.env.VITE_API_URL + "/analyze", { query });
+          const response = await axios.post(API_URL + "/analyze", { query });
           const responseMsg = {
             role: 'assistant',
             evidence: response.data.evidence,

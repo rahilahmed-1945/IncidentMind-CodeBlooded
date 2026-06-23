@@ -306,6 +306,9 @@ async function runLiveIncidentEngine(incidentData, eventEmitterCallback, socket,
         emit("ACTION_APPROVED", { action: operatorResolution }, actionTimestamp, "WAITING_FOR_OPERATOR", "ACTION_APPROVED", "operator_approved");
         await asyncSleep(1);
 
+        emit("RAW_TELEMETRY_EVENT", { message: `Operator Action: Executed ${operatorResolution}` }, actionTimestamp, "WAITING_FOR_OPERATOR", "ACTION_APPROVED", "telemetry_ingested");
+        await asyncSleep(1);
+
         emit("ACTION_EXECUTING", { action: operatorResolution }, actionTimestamp, "ACTION_APPROVED", "ACTION_EXECUTING", "platform_executing");
         await asyncSleep(2);
 
@@ -351,8 +354,8 @@ async function runLiveIncidentEngine(incidentData, eventEmitterCallback, socket,
           break; 
 
         } else if (operatorResolution === 'Ignore Warning') {
-          // Continue generic timeline to experience the SEV-1 and catastrophic failure naturally
-          continue;
+          // The generic timeline contains a historical rollback. We must break to avoid emitting contradictory events.
+          break;
           
         } else if (operatorResolution === 'Enable Fallback') {
           // Recover auth-service, but checkout stays degraded
