@@ -68,7 +68,7 @@ export default function App() {
   // Fetch History when Replay starts
   useEffect(() => {
     if (isReplaying) {
-      axios.get("http://localhost:3000/history").then(res => {
+      axios.get(import.meta.env.VITE_API_URL + "/history").then(res => {
         setHistoricalSnapshots(res.data);
       }).catch(err => console.error("Failed to fetch history", err));
     }
@@ -81,7 +81,7 @@ export default function App() {
     let isMounted = true;
     
     // Connect to local backend
-    const socket = io("http://localhost:3000");
+    const socket = io(import.meta.env.VITE_API_URL);
     socketRef.current = socket;
 
     socket.on("connect", () => {
