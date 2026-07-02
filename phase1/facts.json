@@ -1,0 +1,32 @@
+{
+  "project": "app",
+  "facts": [
+    "The function `get_current_user` is defined in module `app.auth.security` which belongs to the `auth` component.",
+    "The function `validate_token` is defined in module `app.auth.security` which belongs to the `auth` component.",
+    "The function `place_order` is defined in module `app.routes.orders` which belongs to the `routes` component.",
+    "The function `read_profile` is defined in module `app.routes.users` which belongs to the `routes` component.",
+    "The function `charge` is defined in module `app.services.billing` which belongs to the `services` component.",
+    "The function `refund` is defined in module `app.services.billing` which belongs to the `services` component.",
+    "The function `cleanup` is defined in module `app.tasks.nightly` which belongs to the `tasks` component.",
+    "Module `app.routes.orders` (component `routes`) depends on `get_current_user` from `app.auth.security` (component `auth`).",
+    "Module `app.routes.orders` (component `routes`) depends on `charge` from `app.services.billing` (component `services`).",
+    "Module `app.routes.users` (component `routes`) depends on `get_current_user` from `app.auth.security` (component `auth`).",
+    "Module `app.services.billing` (component `services`) depends on `get_current_user` from `app.auth.security` (component `auth`).",
+    "Module `app.tasks.nightly` (component `tasks`) depends on `validate_token` from `app.auth.security` (component `auth`).",
+    "In module `app.routes.orders`, `place_order` calls `get_current_user` (defined in `app.auth.security`).",
+    "In module `app.routes.orders`, `place_order` calls `charge` (defined in `app.services.billing`).",
+    "In module `app.routes.users`, `read_profile` calls `get_current_user` (defined in `app.auth.security`).",
+    "In module `app.services.billing`, `refund` calls `get_current_user` (defined in `app.auth.security`).",
+    "In module `app.tasks.nightly`, `cleanup` calls `validate_token` (defined in `app.auth.security`).",
+    "If `get_current_user` changes, these modules are directly affected: `app.routes.orders`, `app.routes.users`, `app.services.billing`.",
+    "If `charge` changes, these modules are directly affected: `app.routes.orders`.",
+    "If `validate_token` changes, these modules are directly affected: `app.tasks.nightly`."
+  ],
+  "stats": {
+    "files": 5,
+    "modules": 5,
+    "defs": 7,
+    "facts": 20,
+    "defs_with_dependents": 3
+  }
+}
