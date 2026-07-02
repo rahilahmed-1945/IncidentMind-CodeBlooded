@@ -41,3 +41,27 @@ script to match exactly, and we move to Phase 1.
 
 We're done with Phase 0 when a `recall`/`search` call returns the test fact
 ("validateUser lives in auth-service"). Don't start Phase 1 until that works.
+
+## Result — locked API contract (verified)
+
+Gate **PASSED**. `search` returned: `` `validateUser` lives in the **auth-service**. ``
+The tenant runs Cognee `v1.2.2`, authenticated with the `X-Api-Key` header.
+The real request shapes (confirmed against the tenant's `/openapi.json`) are:
+
+| Step    | Call                                          | Body that works                                                  |
+|---------|-----------------------------------------------|------------------------------------------------------------------|
+| Ingest  | `POST /api/v1/add_text`                       | `{ "textData": ["…"], "datasetName": "…" }`  (`textData` is an **array**) |
+| Process | `POST /api/v1/cognify`                        | `{ "datasets": ["…"], "runInBackground": false }`  (array only — **no** `datasetName`) |
+| Status  | `GET /api/v1/datasets/status?dataset=<id>`    | → `{"<id>":"DATASET_PROCESSING_COMPLETED"}`                      |
+| Search  | `POST /api/v1/search`                         | `{ "searchType": "GRAPH_COMPLETION", "query": "…", "datasets": ["…"] }` |
+
+Gotchas baked into `cognee-test.mjs`:
+
+- `POST /api/v1/remember` and `POST /api/v1/add` are **`multipart/form-data`**, not
+  JSON — sending JSON there silently drops the fields ("datasetName must be
+  provided"). For a plain text fact use **`/api/v1/add_text`** (JSON).
+- `cognify` has **no** `datasetName` field — only `datasets` / `datasetIds` arrays.
+- `runInBackground: false` makes `cognify` block until the graph is built, so
+  there's no indexing race before `search`.
+- `searchType` is a required enum (17 values); `GRAPH_COMPLETION` returns a clean
+  synthesized answer.
