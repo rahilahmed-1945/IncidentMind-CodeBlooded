@@ -155,6 +155,25 @@ def build_facts(root, module_name=None):
             def_owner.setdefault(name, module)
             def_kind.setdefault(name, kind)
 
+    # Per-module resolution tables. A bare name used in a module only counts as a
+    # cross-module dependency if it actually *resolves* there — i.e. it was imported
+    # into the module (a bound name) or defined locally. This stops a shared bare
+    # name (a `charge`/`get`/`__call__` method, a param, a local var) from matching a
+    # same-named def in an unrelated module and inflating the blast radius.
+    module_bound = {m: {local for local, _ in fa.imports} for m, fa in analyzers.items()}
+    module_defs = {m: {name for name, _ in fa.defs} for m, fa in analyzers.items()}
+
+    def resolve(name, module):
+        """The module `name` refers to when used inside `module`, or None.
+        Locally-defined names resolve to their own module; imported names resolve
+        to the in-repo module that defines them; anything else is unresolvable and
+        is not counted as an edge."""
+        if name in module_defs.get(module, ()):      # defined/shadowed locally
+            return module
+        if name in module_bound.get(module, ()) and name in def_owner:
+            return def_owner[name]
+        return None
+
     facts = []
     stats = {"files": len(files), "modules": len(analyzers), "defs": len(def_owner)}
 
@@ -181,17 +200,21 @@ def build_facts(root, module_name=None):
                         f"`{imported}` from `{target_mod}` (component `{target_svc}`)."
                     )
 
-    # Fact type 3: call edges (function calls another repo-defined function)
+    # Fact type 3: call edges — only when the callee actually resolves in the
+    # caller's module (imported there or defined locally), not just name-matched.
     for module, fa in analyzers.items():
         for caller, callees in fa.calls.items():
             for callee in callees:
-                if callee in def_owner and def_owner[callee] != module:
+                target = resolve(callee, module)
+                if target and target != module:
                     facts.append(
                         f"In module `{module}`, `{caller}` calls `{callee}` "
-                        f"(defined in `{def_owner[callee]}`)."
+                        f"(defined in `{target}`)."
                     )
 
-    # Fact type 4: reverse index — who depends on each def (the blast-radius fuel)
+    # Fact type 4: reverse index — who depends on each def (the blast-radius fuel).
+    # Both edge kinds are name-scoped: imports are bound names by construction, and
+    # call edges must resolve in the using module.
     dependents = defaultdict(set)
     for module, fa in analyzers.items():
         for imported, _ in fa.imports:
@@ -199,7 +222,8 @@ def build_facts(root, module_name=None):
                 dependents[imported].add(module)
         for caller, callees in fa.calls.items():
             for callee in callees:
-                if callee in def_owner and def_owner[callee] != module:
+                target = resolve(callee, module)
+                if target and target != module:
                     dependents[callee].add(module)
     for name, deps in dependents.items():
         if deps:

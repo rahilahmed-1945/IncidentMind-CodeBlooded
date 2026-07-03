@@ -27,3 +27,6 @@ scratch_*.js
 instrument_audit.js
 verify_layout.js
 test-*.js
+
+# Third-party repo cloned only as an extractor target (do not commit)
+fastapi-realworld-example-app/
