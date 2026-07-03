@@ -27,3 +27,9 @@ scratch_*.js
 instrument_audit.js
 verify_layout.js
 test-*.js
+
+# Third-party repo cloned only as an extractor target (do not commit)
+fastapi-realworld-example-app/
+
+# Phase 4 premortem disk cache (regenerated on demand)
+phase4/.cache/

@@ -1,0 +1,52 @@
+{
+  "_disclaimer": "ILLUSTRATIVE incident history for demo purposes. These incidents are fictional but tied to real modules in the fastapi-realworld-example-app to demonstrate Butterfly's historical-memory feature. Disclose as illustrative in the submission.",
+  "project": "app",
+  "incidents": [
+    {
+      "id": "INC-2026-03-14-001",
+      "date": "2026-03-14",
+      "severity": "SEV-1",
+      "symbol": "User",
+      "title": "User model change broke JWT authentication",
+      "facts": [
+        "Incident INC-2026-03-14-001 occurred on 2026-03-14 and was a SEV-1 severity outage.",
+        "Incident INC-2026-03-14-001 was caused by a change to the `User` domain model in module `app.models.domain.users`.",
+        "In incident INC-2026-03-14-001, changing the `User` model broke JWT authentication because `app.services.jwt` depends on the `User` shape.",
+        "Incident INC-2026-03-14-001 cascaded from `User` to `app.services.jwt`, then to `app.api.dependencies.authentication`, taking down login for all users.",
+        "During incident INC-2026-03-14-001, article authorship and profile endpoints also failed because `app.api.routes.articles` and `app.api.routes.profiles` depend on `User`.",
+        "Incident INC-2026-03-14-001 caused approximately 40 minutes of downtime and was resolved by rolling back the `User` model change.",
+        "The lesson from incident INC-2026-03-14-001 is that any change to `User` must be tested against JWT auth and all article and profile routes before merging."
+      ]
+    },
+    {
+      "id": "INC-2026-05-02-002",
+      "date": "2026-05-02",
+      "severity": "SEV-2",
+      "symbol": "get_repository",
+      "title": "Repository factory change broke database access",
+      "facts": [
+        "Incident INC-2026-05-02-002 occurred on 2026-05-02 and was a SEV-2 severity incident.",
+        "Incident INC-2026-05-02-002 was caused by a change to the `get_repository` factory in module `app.api.dependencies.database`.",
+        "In incident INC-2026-05-02-002, changing `get_repository` broke database access for the articles and comments repositories because `app.db.repositories.articles` and `app.db.repositories.comments` are resolved through it.",
+        "Incident INC-2026-05-02-002 caused intermittent 500 errors on article and comment endpoints for about 25 minutes.",
+        "Incident INC-2026-05-02-002 was resolved by reverting the `get_repository` signature change and adding a regression test.",
+        "The lesson from incident INC-2026-05-02-002 is that `get_repository` is a load-bearing factory and signature changes to it are high-risk."
+      ]
+    },
+    {
+      "id": "INC-2026-06-19-003",
+      "date": "2026-06-19",
+      "severity": "SEV-2",
+      "symbol": "User",
+      "title": "Second User-related regression in profile serialization",
+      "facts": [
+        "Incident INC-2026-06-19-003 occurred on 2026-06-19 and was a SEV-2 severity incident.",
+        "Incident INC-2026-06-19-003 was caused by a change to `User` that altered how `app.models.schemas.users` serializes profile responses.",
+        "In incident INC-2026-06-19-003, the `User` change broke the profiles API because `app.api.routes.profiles` and `app.services.profiles` depend on the `User` schema.",
+        "Incident INC-2026-06-19-003 was the second production incident caused by changes to `User`, after INC-2026-03-14-001 in March.",
+        "Incident INC-2026-06-19-003 caused about 15 minutes of degraded profile responses and was resolved by a hotfix to the serialization logic.",
+        "The lesson from incident INC-2026-06-19-003 is that `User` has now caused two separate production incidents and changes to it should be treated as high-risk and reviewed carefully."
+      ]
+    }
+  ]
+}
